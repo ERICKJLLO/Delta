@@ -2,6 +2,7 @@ import { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import MetricCard from "./components/MetricCard";
+import { DollarSign, TrendingUp, Shield, Activity } from "lucide-react";
 
 function App() {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -19,40 +20,53 @@ function App() {
 
       <main className="flex-1 overflow-auto p-6 text-white">
 
-        <h1 className="text-4xl font-bold">
-          Dashboard
-        </h1>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-white mb-2 text-2xl font-medium">
+              Dashboard de Riesgos
+            </h1>
+            <p className="text-gray-400">
+              Monitoreo en tiempo real de riesgos financieros
+            </p>
+          </div>
 
-        <p className="text-slate-400 mt-2 mb-8">
-          Welcome to Proyecto Delta
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-
-          <MetricCard
-            title="Active Risks"
-            value="128"
-            color="text-red-500"
-          />
-
-          <MetricCard
-            title="Critical Alerts"
-            value="23"
-            color="text-yellow-400"
-          />
-
-          <MetricCard
-            title="Protected Assets"
-            value="1,204"
-            color="text-green-500"
-          />
-
-          <MetricCard
-            title="Security Score"
-            value="92%"
-            color="text-blue-500"
-          />
-
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <MetricCard
+              title="Pérdidas Estimadas (Hoy)"
+              value="$45,230"
+              change="+18%"
+              icon={DollarSign}
+              trend="up"
+            />
+            <MetricCard
+              title="Eventos Detectados"
+              value="127"
+              change="+23"
+              icon={Activity}
+              trend="up"
+            />
+            <MetricCard
+              title="Exposición al Riesgo"
+              value="$2.4M"
+              change="+5%"
+              icon={TrendingUp}
+              trend="up"
+            />
+            <MetricCard
+              title="Transacciones Bloqueadas"
+              value="34"
+              change="-12%"
+              icon={Shield}
+              trend="down"
+            />
+            <MetricCard
+              title="Tasa de Detección"
+              value="94.2%"
+              change="+2.1%"
+              icon={Shield}
+              trend="down"
+            />
+          </div>
         </div>
 
       </main>
