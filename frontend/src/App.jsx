@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Sidebar from "./components/Sidebar";
+import Header from "./components/Header";
 import MetricCard from "./components/MetricCard";
 
 function App() {
@@ -13,7 +14,10 @@ function App() {
         setActiveSection={setActiveSection}
       />
 
-      <main className="flex-1 p-8 text-white">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header />
+
+      <main className="flex-1 overflow-auto p-6 text-white">
 
         <h1 className="text-4xl font-bold">
           Dashboard
@@ -52,6 +56,7 @@ function App() {
         </div>
 
       </main>
+      </div>
 
     </div>
   );
