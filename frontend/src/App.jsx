@@ -1,11 +1,17 @@
+import { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import MetricCard from "./components/MetricCard";
 
 function App() {
+  const [activeSection, setActiveSection] = useState("dashboard");
+
   return (
-    <div className="flex bg-slate-950 min-h-screen">
+    <div className="flex bg-[#0d0e14] min-h-screen">
       
-      <Sidebar />
+      <Sidebar
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+      />
 
       <main className="flex-1 p-8 text-white">
 
