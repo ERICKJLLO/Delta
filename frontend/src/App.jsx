@@ -3,6 +3,7 @@ import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import MetricCard from "./components/MetricCard";
 import RiskIndicator from "./components/RiskIndicator";
+import RiskChart from "./components/RiskChart";
 import { DollarSign, TrendingUp, Shield, Activity } from "lucide-react";
 
 function App() {
@@ -72,6 +73,8 @@ function App() {
               trend="down"
             />
           </div>
+
+          <RiskChart />
         </div>
 
       </main>
