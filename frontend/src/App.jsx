@@ -5,6 +5,7 @@ import MetricCard from "./components/MetricCard";
 import RiskIndicator from "./components/RiskIndicator";
 import RiskChart from "./components/RiskChart";
 import TransactionList from "./components/TransactionList";
+import AlertsPanel from "./components/AlertsPanel";
 import { DollarSign, TrendingUp, Shield, Activity } from "lucide-react";
 
 function App() {
@@ -77,7 +78,10 @@ function App() {
 
           <RiskChart />
 
-          <TransactionList />
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <TransactionList />
+            <AlertsPanel />
+          </div>
         </div>
 
       </main>
