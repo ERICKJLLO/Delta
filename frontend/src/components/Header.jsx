@@ -1,8 +1,13 @@
 import { Bell, Search } from "lucide-react";
 
-function Header() {
+function Header({ company, monitoring = true }) {
   return (
     <div className="h-16 bg-[#0a0a0f] border-b border-gray-800 px-6 flex items-center justify-between">
+      {company && (
+        <p className="text-sm text-gray-400 hidden lg:block mr-4 shrink-0">
+          {company}
+        </p>
+      )}
       <div className="flex items-center gap-4 flex-1 max-w-xl">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -18,8 +23,8 @@ function Header() {
         <div className="text-right mr-4">
           <p className="text-sm text-white">Sistema Activo</p>
           <p className="text-xs text-green-400 flex items-center justify-end gap-1">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            Monitoreando en tiempo real
+            <span className={`w-2 h-2 rounded-full animate-pulse ${monitoring ? "bg-green-400" : "bg-gray-500"}`} />
+            {monitoring ? "Monitoreando en tiempo real" : "Monitoreo pausado"}
           </p>
         </div>
 
