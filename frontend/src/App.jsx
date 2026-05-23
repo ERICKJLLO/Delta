@@ -2,6 +2,7 @@ import { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import MetricCard from "./components/MetricCard";
+import RiskIndicator from "./components/RiskIndicator";
 import { DollarSign, TrendingUp, Shield, Activity } from "lucide-react";
 
 function App() {
@@ -30,7 +31,8 @@ function App() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <RiskIndicator level="high" value={72} />
             <MetricCard
               title="Pérdidas Estimadas (Hoy)"
               value="$45,230"
@@ -45,6 +47,9 @@ function App() {
               icon={Activity}
               trend="up"
             />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <MetricCard
               title="Exposición al Riesgo"
               value="$2.4M"
