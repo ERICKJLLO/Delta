@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
+import aiRoutes from './routes/ai.js';
 
 // Cargar variables de entorno desde .env
 dotenv.config();
@@ -26,6 +27,7 @@ app.use((req, res, next) => {
 
 // Rutas API
 app.use('/api/auth', authRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Ruta de diagnóstico simple
 app.get('/api/health', (req, res) => {
