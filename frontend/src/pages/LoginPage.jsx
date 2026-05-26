@@ -12,12 +12,12 @@ function LoginPage() {
   const [error, setError] = useState("");
   const justRegistered = location.state?.registered;
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
-    const success = login(email.trim().toLowerCase(), password);
-    if (!success) {
-      setError("Correo o contraseña incorrectos. Verifica tus credenciales.");
+    const result = await login(email.trim().toLowerCase(), password);
+    if (!result.success) {
+      setError(result.error || "Correo o contraseña incorrectos. Verifica tus credenciales.");
       return;
     }
     navigate("/dashboard");
