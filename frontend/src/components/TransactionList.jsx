@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Lock, Search, CheckCircle, HelpCircle, ShieldAlert } from "lucide-react";
+import { usePlan } from "../context/PlanContext";
 
 const INITIAL_TRANSACTIONS = [
   {
@@ -70,12 +71,25 @@ const riskLabels = {
   investigating: "En Investigación"
 };
 
-function TransactionList() {
+function TransactionList({ searchQuery }) {
+  const { canAccess } = usePlan();
   const [txList, setTxList] = useState(() => {
     const saved = localStorage.getItem("delta_suspicious_transactions");
     return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
   });
   const [toastMessage, setToastMessage] = useState("");
+
+  const filteredTx = txList.filter(tx => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase().trim();
+    return (
+      tx.id.toLowerCase().includes(q) ||
+      tx.amount.toLowerCase().includes(q) ||
+      tx.account.toLowerCase().includes(q) ||
+      tx.location.toLowerCase().includes(q) ||
+      tx.type.toLowerCase().includes(q)
+    );
+  });
 
   // Guardar en localStorage cuando cambie y disparar evento de sincronización
   const updateList = (newList) => {
@@ -116,6 +130,12 @@ function TransactionList() {
   };
 
   const handleAction = (id, action) => {
+    if (!canAccess("transactions_actions")) {
+      window.dispatchEvent(new CustomEvent("delta_open_upgrade_modal", {
+        detail: { plan: "Profesional" }
+      }));
+      return;
+    }
     const transaction = txList.find(t => t.id === id);
     if (!transaction) return;
 
@@ -177,7 +197,7 @@ function TransactionList() {
         </span>
       </div>
 
-      {txList.length === 0 ? (
+      {filteredTx.length === 0 ? (
         <div className="text-center py-12 border border-dashed border-gray-800 rounded-lg bg-[#0a0a0f]">
           <CheckCircle className="w-10 h-10 text-green-400 mx-auto mb-3 animate-pulse" />
           <p className="text-white text-sm font-medium">¡Todo Bajo Control!</p>
@@ -185,7 +205,7 @@ function TransactionList() {
         </div>
       ) : (
         <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-          {txList.map((transaction) => {
+          {filteredTx.map((transaction) => {
             const isBlocked = transaction.actionState === "blocked";
             const isInvestigating = transaction.actionState === "investigating";
             const isPending = transaction.actionState === "pending" || !transaction.actionState;

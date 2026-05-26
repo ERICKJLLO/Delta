@@ -169,6 +169,56 @@ function Section({ title, subtitle, children }) {
 function DashboardHome({ user, planDetails, searchQuery }) {
   const companyName = user?.company_name || user?.companyName || "Tu Empresa";
   
+  const [txList, setTxList] = useState(() => {
+    const saved = localStorage.getItem("delta_suspicious_transactions");
+    return saved ? JSON.parse(saved) : [
+      { id: "TX-7482", amount: "$45,230.00", risk: "high", actionState: "pending" },
+      { id: "TX-7481", amount: "$8,450.00", risk: "high", actionState: "pending" },
+      { id: "TX-7480", amount: "$2,340.00", risk: "medium", actionState: "pending" },
+      { id: "TX-7479", amount: "$15,780.00", risk: "medium", actionState: "pending" },
+      { id: "TX-7478", amount: "$890.00", risk: "low", actionState: "pending" }
+    ];
+  });
+
+  useEffect(() => {
+    const handleSync = () => {
+      const saved = localStorage.getItem("delta_suspicious_transactions");
+      if (saved) {
+        setTxList(JSON.parse(saved));
+      }
+    };
+    window.addEventListener("delta_transactions_updated", handleSync);
+    return () => window.removeEventListener("delta_transactions_updated", handleSync);
+  }, []);
+
+  // Funciones de cálculo dinámico para métricas
+  const parseAmount = (amt) => {
+    if (!amt) return 0;
+    return parseFloat(amt.replace(/[^0-9.]/g, ''));
+  };
+
+  const blockedCount = txList.filter(t => t.actionState === 'blocked').length;
+  const safeCount = 5 - txList.length; // Transacciones removidas al ser marcadas seguras
+  
+  // Pérdidas estimadas: se descuenta el valor de lo bloqueado (pérdida evitada)
+  const baseLosses = 45230;
+  const blockedAmount = txList
+    .filter(t => t.actionState === 'blocked')
+    .reduce((sum, t) => sum + parseAmount(t.amount), 0);
+  const finalLosses = Math.max(0, baseLosses - blockedAmount);
+  const formattedLosses = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(finalLosses);
+
+  // Eventos detectados: disminuye a medida que se resuelven (bloqueados o seguros)
+  const activeEvents = Math.max(0, 127 - blockedCount - safeCount);
+
+  // Transacciones bloqueadas totales
+  const totalBlocked = 34 + blockedCount;
+
+  // Tasa de detección dinámica
+  const baseRate = 94.2;
+  const rateIncrease = blockedCount * 0.8 + safeCount * 0.4;
+  const detectionRate = Math.min(100, baseRate + rateIncrease).toFixed(1) + "%";
+
   return (
     <div className="space-y-6">
       <div>
@@ -187,17 +237,17 @@ function DashboardHome({ user, planDetails, searchQuery }) {
             <RiskIndicator level="high" value={72} />
             <MetricCard
               title="Pérdidas Estimadas (Hoy)"
-              value="$45,230"
-              change="+18%"
+              value={formattedLosses}
+              change={blockedCount > 0 ? "-100%" : "+18%"}
               icon={DollarSign}
-              trend="up"
+              trend={blockedCount > 0 ? "down" : "up"}
             />
             <MetricCard
               title="Eventos Detectados"
-              value="127"
-              change="+23"
+              value={String(activeEvents)}
+              change={blockedCount > 0 || safeCount > 0 ? `-${blockedCount + safeCount}` : "+23"}
               icon={Activity}
-              trend="up"
+              trend={blockedCount > 0 || safeCount > 0 ? "down" : "up"}
             />
           </div>
 
@@ -211,25 +261,25 @@ function DashboardHome({ user, planDetails, searchQuery }) {
             />
             <MetricCard
               title="Transacciones Bloqueadas"
-              value="34"
-              change="-12%"
+              value={String(totalBlocked)}
+              change={blockedCount > 0 ? `+${blockedCount}` : "0%"}
               icon={Shield}
-              trend="down"
+              trend={blockedCount > 0 ? "up" : "down"}
             />
             <MetricCard
               title="Tasa de Detección"
-              value="94.2%"
-              change="+2.1%"
+              value={detectionRate}
+              change={blockedCount > 0 || safeCount > 0 ? `+${rateIncrease.toFixed(1)}%` : "+2.1%"}
               icon={Shield}
-              trend="down"
+              trend="up"
             />
           </div>
 
           <RiskChart />
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <TransactionList />
-            <AlertsPanel />
+            <TransactionList searchQuery={searchQuery} />
+            <AlertsPanel searchQuery={searchQuery} />
           </div>
         </>
       )}
