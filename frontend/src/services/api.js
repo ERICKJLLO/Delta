@@ -92,6 +92,22 @@ export const api = {
    */
   getToken: () => {
     return localStorage.getItem('delta_token');
+  },
+
+  /**
+   * Enviar un mensaje a Delta AI y recibir respuesta semántica
+   * @param {string} message - El mensaje del usuario
+   * @param {string} plan - El plan actual del usuario
+   * @param {Array} transactions - Lista de transacciones para contexto
+   * @param {object} context - Contexto adicional (riesgo, etc.)
+   */
+  chatWithAI: async (message, plan = 'basic', transactions = [], context = {}) => {
+    const response = await fetch(`${API_URL}/ai/chat`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ message, plan, transactions, context }),
+    });
+    return await handleResponse(response);
   }
 };
 
