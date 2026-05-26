@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -14,6 +14,7 @@ import { useAuth } from "../context/AuthContext";
 import { usePlan } from "../context/PlanContext";
 import { useRiskMonitor } from "../hooks/useRiskMonitor";
 import LockedFeature from "../components/LockedFeature";
+import UpgradeModal from "../components/UpgradeModal";
 import { DollarSign, TrendingUp, Shield, Activity } from "lucide-react";
 
 function DashboardPage() {
@@ -22,8 +23,23 @@ function DashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [searchQuery, setSearchQuery] = useState("");
   const { currentRisk, resolveRisk, dismissRisk, lastScan, monitoring } =
     useRiskMonitor(true);
+
+  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
+  const [requiredPlan, setRequiredPlan] = useState("Profesional");
+
+  useEffect(() => {
+    const handleOpenUpgrade = (e) => {
+      if (e.detail?.plan) {
+        setRequiredPlan(e.detail.plan);
+      }
+      setIsUpgradeOpen(true);
+    };
+    window.addEventListener("delta_open_upgrade_modal", handleOpenUpgrade);
+    return () => window.removeEventListener("delta_open_upgrade_modal", handleOpenUpgrade);
+  }, []);
 
   const isDeltaAI = location.pathname.endsWith("/delta-ai");
 
@@ -57,6 +73,8 @@ function DashboardPage() {
           monitoring={monitoring}
           lastScan={lastScan}
           company={companyName}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
 
         <main className="flex-1 overflow-auto p-6">
@@ -66,13 +84,13 @@ function DashboardPage() {
             </LockedFeature>
           ) : (
             <>
-              {activeSection === "dashboard" && <DashboardHome user={user} planDetails={planDetails} />}
+              {activeSection === "dashboard" && <DashboardHome user={user} planDetails={planDetails} searchQuery={searchQuery} />}
               {activeSection === "transactions" && (
                 <Section
                   title="Gestión de Transacciones"
                   subtitle="Monitoreo y análisis de transacciones sospechosas"
                 >
-                  <TransactionList />
+                  <TransactionList searchQuery={searchQuery} />
                 </Section>
               )}
               {activeSection === "alerts" && (
@@ -80,7 +98,7 @@ function DashboardPage() {
                   title="Centro de Alertas"
                   subtitle="Sistema de alertas y notificaciones en tiempo real"
                 >
-                  <AlertsPanel />
+                  <AlertsPanel searchQuery={searchQuery} />
                 </Section>
               )}
               {activeSection === "analysis" && (
@@ -126,6 +144,12 @@ function DashboardPage() {
           onDismiss={dismissRisk}
         />
       )}
+
+      <UpgradeModal
+        isOpen={isUpgradeOpen}
+        onClose={() => setIsUpgradeOpen(false)}
+        requiredPlanName={requiredPlan}
+      />
     </div>
   );
 }
@@ -142,7 +166,7 @@ function Section({ title, subtitle, children }) {
   );
 }
 
-function DashboardHome({ user, planDetails }) {
+function DashboardHome({ user, planDetails, searchQuery }) {
   const companyName = user?.company_name || user?.companyName || "Tu Empresa";
   
   return (
@@ -154,54 +178,175 @@ function DashboardHome({ user, planDetails }) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <RiskIndicator level="high" value={72} />
-        <MetricCard
-          title="Pérdidas Estimadas (Hoy)"
-          value="$45,230"
-          change="+18%"
-          icon={DollarSign}
-          trend="up"
-        />
-        <MetricCard
-          title="Eventos Detectados"
-          value="127"
-          change="+23"
-          icon={Activity}
-          trend="up"
-        />
+      {/* Si hay búsqueda activa, mostrar resultados filtrados */}
+      {searchQuery && searchQuery.trim().length > 0 ? (
+        <SearchResults query={searchQuery} />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <RiskIndicator level="high" value={72} />
+            <MetricCard
+              title="Pérdidas Estimadas (Hoy)"
+              value="$45,230"
+              change="+18%"
+              icon={DollarSign}
+              trend="up"
+            />
+            <MetricCard
+              title="Eventos Detectados"
+              value="127"
+              change="+23"
+              icon={Activity}
+              trend="up"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <MetricCard
+              title="Exposición al Riesgo"
+              value="$2.4M"
+              change="+5%"
+              icon={TrendingUp}
+              trend="up"
+            />
+            <MetricCard
+              title="Transacciones Bloqueadas"
+              value="34"
+              change="-12%"
+              icon={Shield}
+              trend="down"
+            />
+            <MetricCard
+              title="Tasa de Detección"
+              value="94.2%"
+              change="+2.1%"
+              icon={Shield}
+              trend="down"
+            />
+          </div>
+
+          <RiskChart />
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <TransactionList />
+            <AlertsPanel />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Panel de resultados de búsqueda global
+ */
+function SearchResults({ query }) {
+  const q = query.toLowerCase().trim();
+
+  // Buscar en transacciones
+  const savedTx = localStorage.getItem("delta_suspicious_transactions");
+  const allTransactions = savedTx ? JSON.parse(savedTx) : [];
+  const matchedTx = allTransactions.filter(tx =>
+    tx.id.toLowerCase().includes(q) ||
+    tx.amount.toLowerCase().includes(q) ||
+    tx.account.toLowerCase().includes(q) ||
+    tx.location.toLowerCase().includes(q) ||
+    tx.type.toLowerCase().includes(q) ||
+    (tx.actionState && tx.actionState.toLowerCase().includes(q))
+  );
+
+  // Buscar en alertas estáticas
+  const alerts = [
+    { id: "1", title: "Patrón de fraude detectado", description: "Múltiples transferencias desde Nigeria en la última hora", severity: "critical" },
+    { id: "2", title: "Aumento en transacciones sospechosas", description: "Incremento del 45% en actividad anómala", severity: "warning" },
+    { id: "3", title: "Sistema de protección activado", description: "Bloqueo automático de 12 transacciones", severity: "info" },
+    { id: "4", title: "Comportamiento inusual detectado", description: "Cuenta ****3847 con actividad fuera de patrón normal", severity: "warning" },
+  ];
+  const matchedAlerts = alerts.filter(a =>
+    a.title.toLowerCase().includes(q) ||
+    a.description.toLowerCase().includes(q) ||
+    a.severity.toLowerCase().includes(q)
+  );
+
+  const totalResults = matchedTx.length + matchedAlerts.length;
+
+  const riskStyles = {
+    high: "text-red-400 bg-red-500/10 border-red-500/30",
+    medium: "text-yellow-400 bg-yellow-500/10 border-yellow-500/30",
+    low: "text-green-400 bg-green-500/10 border-green-500/30",
+    blocked: "text-red-500 bg-red-600/20 border-red-600/40",
+    investigating: "text-blue-400 bg-blue-500/10 border-blue-500/30"
+  };
+
+  const severityStyles = {
+    critical: "bg-red-500/20 text-red-400",
+    warning: "bg-yellow-500/20 text-yellow-400",
+    info: "bg-blue-500/20 text-blue-400"
+  };
+
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      <div className="p-4 rounded-lg bg-[#13141b] border border-gray-800">
+        <p className="text-sm text-gray-400">
+          Resultados para <span className="text-white font-semibold">"{query}"</span>
+          <span className="ml-2 text-gray-500">— {totalResults} encontrados</span>
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <MetricCard
-          title="Exposición al Riesgo"
-          value="$2.4M"
-          change="+5%"
-          icon={TrendingUp}
-          trend="up"
-        />
-        <MetricCard
-          title="Transacciones Bloqueadas"
-          value="34"
-          change="-12%"
-          icon={Shield}
-          trend="down"
-        />
-        <MetricCard
-          title="Tasa de Detección"
-          value="94.2%"
-          change="+2.1%"
-          icon={Shield}
-          trend="down"
-        />
-      </div>
+      {totalResults === 0 && (
+        <div className="p-12 text-center rounded-xl bg-[#13141b] border border-gray-800">
+          <p className="text-gray-400 text-sm">No se encontraron resultados para esta búsqueda.</p>
+          <p className="text-gray-600 text-xs mt-2">Intenta con términos como "Nigeria", "ATM", "fraude", etc.</p>
+        </div>
+      )}
 
-      <RiskChart />
+      {matchedTx.length > 0 && (
+        <div className="p-6 rounded-xl bg-[#13141b] border border-gray-800">
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Shield className="w-4 h-4 text-blue-400" />
+            Transacciones ({matchedTx.length})
+          </h3>
+          <div className="space-y-3">
+            {matchedTx.map(tx => (
+              <div key={tx.id} className="p-3 rounded-lg bg-[#0a0a0f] border border-gray-800 flex items-center justify-between hover:border-gray-700 transition-colors">
+                <div className="flex items-center gap-3">
+                  <span className="text-white font-medium text-sm">{tx.id}</span>
+                  <span className={`px-2 py-0.5 rounded border text-[10px] font-semibold uppercase ${riskStyles[tx.actionState !== "pending" ? tx.actionState : tx.risk] || riskStyles[tx.risk]}`}>
+                    {tx.actionState !== "pending" ? tx.actionState : tx.risk}
+                  </span>
+                  <span className="text-gray-500 text-xs">{tx.type}</span>
+                </div>
+                <div className="flex items-center gap-4 text-xs text-gray-400">
+                  <span>{tx.location}</span>
+                  <span className="text-white font-medium">{tx.amount}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <TransactionList />
-        <AlertsPanel />
-      </div>
+      {matchedAlerts.length > 0 && (
+        <div className="p-6 rounded-xl bg-[#13141b] border border-gray-800">
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Activity className="w-4 h-4 text-yellow-400" />
+            Alertas ({matchedAlerts.length})
+          </h3>
+          <div className="space-y-3">
+            {matchedAlerts.map(alert => (
+              <div key={alert.id} className="p-3 rounded-lg bg-[#0a0a0f] border border-gray-800 flex items-center justify-between hover:border-gray-700 transition-colors">
+                <div>
+                  <p className="text-white text-sm font-medium">{alert.title}</p>
+                  <p className="text-gray-500 text-xs mt-0.5">{alert.description}</p>
+                </div>
+                <span className={`px-2 py-1 rounded text-[10px] font-semibold ${severityStyles[alert.severity]}`}>
+                  {alert.severity === "critical" ? "Crítico" : alert.severity === "warning" ? "Advertencia" : "Info"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
