@@ -1,7 +1,15 @@
 {
-  "dependencies": {
-    "@tailwindcss/vite": "^4.3.0",
-    "lucide-react": "^1.16.0",
-    "tailwindcss": "^4.3.0"
+  "name": "delta-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Proyecto Delta - Risk Management Platform (Root Workspace)",
+  "scripts": {
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "install:all": "npm install && npm install --prefix frontend && npm install --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   }
 }
