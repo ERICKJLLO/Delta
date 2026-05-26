@@ -54,3 +54,24 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #4b5563;
 }
+
+/* Forzar contenedor estático de 100vh para prevenir scroll de ventana */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #0d0e14;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Evitar outline de selección feo e intrusivo en los gráficos de Recharts */
+.recharts-wrapper *:focus,
+.recharts-sector:focus,
+.recharts-curve:focus,
+.recharts-active-dot:focus,
+.recharts-default-tooltip:focus,
+path:focus {
+  outline: none !important;
+}
