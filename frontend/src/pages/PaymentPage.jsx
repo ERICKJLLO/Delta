@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { CreditCard, AlertCircle, CheckCircle } from "lucide-react";
 import OnboardingLayout from "../components/onboarding/OnboardingLayout";
 import { PLANS } from "../constants/plans";
-import { getOnboardingData, activateAccount } from "../utils/storage";
+import { getOnboardingData } from "../utils/storage";
 import { formatCurrency } from "../utils/format";
+import { useAuth } from "../context/AuthContext";
 
 function PaymentPage() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const onboarding = getOnboardingData();
   const business = onboarding.business;
   const plan = PLANS[onboarding.planId];
@@ -41,6 +43,7 @@ function PaymentPage() {
 
     setStatus("processing");
 
+    // Simular procesamiento del pago
     await new Promise((r) => setTimeout(r, 1500));
 
     const lastDigit = parseInt(cardNumber.replace(/\D/g, "").slice(-1), 10);
@@ -50,9 +53,35 @@ function PaymentPage() {
       return;
     }
 
-    activateAccount({ business, plan, password });
+    // Preparar datos para registro en backend
+    const registerPayload = {
+      email: business.email,
+      password: password,
+      company_name: business.companyName,
+      nit: business.nit,
+      contact_name: business.contactName,
+      phone: business.phone,
+      address: business.address,
+      industry: business.industry,
+      employees: business.employees,
+      plan_id: onboarding.planId
+    };
+
+    // Llamar al registro en la API del backend
+    const result = await register(registerPayload);
+    
+    if (!result.success) {
+      setStatus("error");
+      setError(result.error || "Ocurrió un error al registrar la cuenta. Intente nuevamente.");
+      return;
+    }
+
     setStatus("success");
-    setTimeout(() => navigate("/login", { state: { registered: true } }), 2000);
+    
+    // Auto-redirección después de 2.5 segundos
+    setTimeout(() => {
+      navigate("/dashboard");
+    }, 2500);
   }
 
   const inputClass =
@@ -67,9 +96,15 @@ function PaymentPage() {
     >
       {status === "success" ? (
         <div className="text-center py-8">
-          <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-          <p className="text-white text-xl font-medium mb-2">Pago aprobado</p>
-          <p className="text-gray-400">Cuenta creada y servicio activado. Redirigiendo al inicio de sesión...</p>
+          <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4 animate-bounce" />
+          <p className="text-white text-xl font-medium mb-2">¡Pago aprobado y cuenta creada!</p>
+          <p className="text-gray-400 mb-6">Tu servicio ha sido activado con éxito. Redirigiendo...</p>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors shadow-lg shadow-blue-500/20"
+          >
+            Continuar al Dashboard
+          </button>
         </div>
       ) : (
         <form onSubmit={handlePayment} className="space-y-4">
@@ -138,3 +173,4 @@ function PaymentPage() {
 }
 
 export default PaymentPage;
+
