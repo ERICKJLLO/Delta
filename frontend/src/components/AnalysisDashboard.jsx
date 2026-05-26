@@ -62,6 +62,7 @@ const renderActiveShape = (props) => {
         endAngle={endAngle}
         fill={fill}
         className="transition-all duration-300 drop-shadow-xl"
+        style={{ outline: "none" }}
       />
     </g>
   );
@@ -79,7 +80,7 @@ function AnalysisDashboard() {
         <div className="p-6 rounded-xl bg-[#13141b] border border-gray-800">
           <h3 className="text-white mb-6">Tipos de Fraude Detectados</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
+            <PieChart style={{ outline: "none" }}>
               <Pie
                 data={fraudTypeData}
                 cx="50%"
@@ -94,10 +95,10 @@ function AnalysisDashboard() {
                 activeIndex={activeIndex}
                 activeShape={renderActiveShape}
                 onClick={onPieClick}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', outline: "none" }}
               >
                 {fraudTypeData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell key={`cell-${index}`} fill={entry.color} style={{ outline: "none" }} />
                 ))}
               </Pie>
               <Tooltip contentStyle={tooltipStyle} />
