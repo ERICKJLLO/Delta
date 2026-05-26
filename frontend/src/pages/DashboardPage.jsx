@@ -11,11 +11,14 @@ import AnalysisDashboard from "../components/AnalysisDashboard";
 import RiskProtocolPanel from "../components/RiskProtocolPanel";
 import DeltaAIPage from "./DeltaAIPage";
 import { useAuth } from "../context/AuthContext";
+import { usePlan } from "../context/PlanContext";
 import { useRiskMonitor } from "../hooks/useRiskMonitor";
+import LockedFeature from "../components/LockedFeature";
 import { DollarSign, TrendingUp, Shield, Activity } from "lucide-react";
 
 function DashboardPage() {
   const { user, logout } = useAuth();
+  const { planDetails } = usePlan();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -23,6 +26,8 @@ function DashboardPage() {
     useRiskMonitor(true);
 
   const isDeltaAI = location.pathname.endsWith("/delta-ai");
+
+  const companyName = user?.company_name || user?.companyName || "Tu Empresa";
 
   function handleSectionChange(section) {
     if (section === "delta-ai") {
@@ -51,15 +56,17 @@ function DashboardPage() {
         <Header
           monitoring={monitoring}
           lastScan={lastScan}
-          company={user?.companyName}
+          company={companyName}
         />
 
         <main className="flex-1 overflow-auto p-6">
           {isDeltaAI ? (
-            <DeltaAIPage />
+            <LockedFeature feature="delta_ai">
+              <DeltaAIPage />
+            </LockedFeature>
           ) : (
             <>
-              {activeSection === "dashboard" && <DashboardHome user={user} />}
+              {activeSection === "dashboard" && <DashboardHome user={user} planDetails={planDetails} />}
               {activeSection === "transactions" && (
                 <Section
                   title="Gestión de Transacciones"
@@ -81,7 +88,9 @@ function DashboardPage() {
                   title="Análisis de Riesgos"
                   subtitle="Historial, tendencias y patrones de fraude"
                 >
-                  <AnalysisDashboard />
+                  <LockedFeature feature="analysis">
+                    <AnalysisDashboard />
+                  </LockedFeature>
                 </Section>
               )}
               {activeSection === "settings" && (
@@ -91,13 +100,16 @@ function DashboardPage() {
                 >
                   <div className="p-6 rounded-xl bg-[#13141b] border border-gray-800 space-y-3">
                     <p className="text-gray-400">
-                      Empresa: <span className="text-white">{user?.companyName}</span>
+                      Empresa: <span className="text-white">{companyName}</span>
                     </p>
                     <p className="text-gray-400">
-                      Plan: <span className="text-white">{user?.planName}</span>
+                      Plan actual: <span className="text-blue-400 font-bold">{planDetails.name}</span>
                     </p>
                     <p className="text-gray-400">
                       NIT: <span className="text-white">{user?.nit}</span>
+                    </p>
+                    <p className="text-gray-400">
+                      Contacto: <span className="text-white">{user?.contact_name || user?.contactName}</span>
                     </p>
                   </div>
                 </Section>
@@ -130,13 +142,15 @@ function Section({ title, subtitle, children }) {
   );
 }
 
-function DashboardHome({ user }) {
+function DashboardHome({ user, planDetails }) {
+  const companyName = user?.company_name || user?.companyName || "Tu Empresa";
+  
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-white mb-2 text-2xl font-medium">Dashboard de Riesgos</h1>
         <p className="text-gray-400">
-          Monitoreo en tiempo real — {user?.companyName} · Plan {user?.planName}
+          Monitoreo en tiempo real — {companyName} · Plan <span className="text-blue-400 font-semibold">{planDetails.name}</span>
         </p>
       </div>
 
