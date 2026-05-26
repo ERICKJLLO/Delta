@@ -1,5 +1,5 @@
 // Client API centralizado para comunicarse con el Delta Backend Express API
-const API_URL = 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 /**
  * Obtener los headers por defecto, incluyendo el token JWT si está disponible.
