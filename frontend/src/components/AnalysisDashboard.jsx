@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   BarChart,
   Bar,
@@ -10,6 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  Sector,
 } from "recharts";
 
 const fraudTypeData = [
@@ -44,7 +46,33 @@ const tooltipStyle = {
   color: "#fff",
 };
 
+const renderActiveShape = (props) => {
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload } = props;
+  return (
+    <g>
+      <text x={cx} y={cy - outerRadius - 20} dy={8} textAnchor="middle" fill={fill} className="text-sm font-bold animate-fadeIn">
+        {payload.name} ({(payload.percent * 100).toFixed(1)}%)
+      </text>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius + 15}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        className="transition-all duration-300 drop-shadow-xl"
+      />
+    </g>
+  );
+};
+
 function AnalysisDashboard() {
+  const [activeIndex, setActiveIndex] = useState(null);
+
+  const onPieClick = (_, index) => {
+    setActiveIndex(activeIndex === index ? null : index);
+  };
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -58,11 +86,15 @@ function AnalysisDashboard() {
                 cy="50%"
                 labelLine={false}
                 label={({ name, percent }) =>
-                  `${name}: ${(percent * 100).toFixed(0)}%`
+                  activeIndex === null ? `${name}: ${(percent * 100).toFixed(0)}%` : ""
                 }
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
+                activeIndex={activeIndex}
+                activeShape={renderActiveShape}
+                onClick={onPieClick}
+                style={{ cursor: 'pointer' }}
               >
                 {fraudTypeData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />

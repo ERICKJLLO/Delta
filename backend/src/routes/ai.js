@@ -31,6 +31,7 @@ router.post('/chat', (req, res) => {
       intent: intent.type,
       confidence: intent.confidence,
       suggestions: response.suggestions || [],
+      action: response.action || null,
       timestamp: new Date().toISOString()
     });
 
@@ -147,7 +148,8 @@ function generateSemanticResponse(intent, query, planId, transactions, context) 
 
     block_request: {
       text: generateBlockRecommendation(highRiskTx, blockedTx, pendingTx),
-      suggestions: ['Confirmar bloqueo masivo', 'Ver transacciones pendientes', 'Generar reporte de bloqueos']
+      suggestions: ['Ver transacciones pendientes', 'Generar reporte de bloqueos'],
+      action: highRiskTx.length > 0 ? { type: 'BLOCK_TRANSACTIONS', payload: highRiskTx.map(t => t.id) } : null
     },
 
     risk_analysis: {
@@ -226,8 +228,8 @@ function generateBlockRecommendation(highRiskTx, blockedTx, pendingTx) {
     return `## ✅ Sin Bloqueos Pendientes\n\nNo hay transacciones de alto riesgo que requieran bloqueo en este momento.\n\n**Transacciones ya bloqueadas:** ${blockedTx.length}\n**Pendientes de revisión:** ${pendingTx.length}\n\n_El sistema de detección automática está activo y monitoreando._`;
   }
 
-  let text = `## 🔒 Recomendación de Bloqueo\n\n`;
-  text += `He identificado **${highRiskTx.length} transacciones** que recomiendo bloquear de forma preventiva:\n\n`;
+  let text = `## 🔒 Ejecutando Bloqueo Automático\n\n`;
+  text += `He procedido a bloquear preventivamente las siguientes **${highRiskTx.length} transacciones** de alto riesgo:\n\n`;
   highRiskTx.forEach(tx => {
     text += `- ⚠️ **${tx.id}** — ${tx.amount} desde ${tx.location}\n`;
   });
@@ -235,7 +237,7 @@ function generateBlockRecommendation(highRiskTx, blockedTx, pendingTx) {
   text += `1. Origen geográfico en zonas de alto riesgo\n`;
   text += `2. Montos que superan los umbrales de seguridad\n`;
   text += `3. Patrones inconsistentes con el comportamiento histórico\n\n`;
-  text += `_Para bloquear, usa los botones de acción en el panel de Transacciones Sospechosas._`;
+  text += `_Las transacciones han sido bloqueadas y reportadas al equipo de análisis._`;
 
   return text;
 }

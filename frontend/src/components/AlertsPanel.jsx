@@ -60,20 +60,35 @@ const severityStyles = {
   },
 };
 
-function AlertsPanel() {
+function AlertsPanel({ searchQuery }) {
+  const filteredAlerts = alerts.filter(alert => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase().trim();
+    return (
+      alert.title.toLowerCase().includes(q) ||
+      alert.description.toLowerCase().includes(q) ||
+      alert.severity.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className="p-6 rounded-xl bg-[#13141b] border border-gray-800">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-white">Alertas Recientes</h3>
         <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm animate-pulse">
-          {alerts.filter((a) => a.severity === "critical").length} Críticas
+          {filteredAlerts.filter((a) => a.severity === "critical").length} Críticas
         </span>
       </div>
 
       <div className="space-y-3">
-        {alerts.map((alert) => {
-          const styles = severityStyles[alert.severity];
-          const Icon = alert.icon;
+        {filteredAlerts.length === 0 ? (
+          <div className="text-center py-6 border border-dashed border-gray-800 rounded-lg">
+            <p className="text-gray-500 text-sm">No hay alertas que coincidan con la búsqueda.</p>
+          </div>
+        ) : (
+          filteredAlerts.map((alert) => {
+            const styles = severityStyles[alert.severity];
+            const Icon = alert.icon;
 
           return (
             <div
@@ -99,7 +114,7 @@ function AlertsPanel() {
               </div>
             </div>
           );
-        })}
+        }))}
       </div>
     </div>
   );

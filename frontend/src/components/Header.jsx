@@ -45,7 +45,7 @@ const typeDots = {
   warning: "bg-yellow-400"
 };
 
-function Header({ company, monitoring = true, searchQuery, onSearchChange }) {
+function Header({ company, monitoring = true, searchQuery, onSearchChange, onNotificationClick }) {
   const [notifications, setNotifications] = useState(() => {
     const saved = localStorage.getItem("delta_notifications");
     return saved ? JSON.parse(saved) : DEFAULT_NOTIFICATIONS;
@@ -220,7 +220,11 @@ function Header({ company, monitoring = true, searchQuery, onSearchChange }) {
                       className={`relative p-3.5 border-b border-gray-800/50 border-l-2 transition-all hover:bg-white/[0.02] cursor-pointer group ${
                         typeStyles[notif.type] || typeStyles.info
                       } ${notif.read ? "opacity-60" : ""}`}
-                      onClick={() => markAsRead(notif.id)}
+                      onClick={() => {
+                        markAsRead(notif.id);
+                        setIsPopoverOpen(false);
+                        onNotificationClick?.(notif);
+                      }}
                     >
                       <div className="flex items-start gap-3">
                         {/* Indicador de no leído */}

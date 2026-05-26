@@ -83,7 +83,4 @@ export function LockedFeature({ feature, children, fallback = null, message = ""
     </div>
   );
 }
-
-export default LockedFeature;
-
 export default LockedFeature;

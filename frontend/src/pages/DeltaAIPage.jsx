@@ -239,6 +239,36 @@ function DeltaAIPage() {
     }
   }
 
+  function executeAction(action) {
+    if (!action) return;
+    const transactions = getTransactions();
+    if (action.type === 'BLOCK_TRANSACTIONS') {
+      const updatedTx = transactions.map(tx => {
+        if (action.payload.includes(tx.id)) {
+          return { ...tx, actionState: 'blocked' };
+        }
+        return tx;
+      });
+      localStorage.setItem("delta_suspicious_transactions", JSON.stringify(updatedTx));
+      window.dispatchEvent(new Event("delta_transactions_updated"));
+
+      // Add notification
+      const savedNotifs = localStorage.getItem("delta_notifications");
+      const currentNotifs = savedNotifs ? JSON.parse(savedNotifs) : [];
+      const newNotif = {
+        id: `NOTIF-AI-${Date.now()}`,
+        title: "Acción de Delta AI",
+        message: `Se bloquearon ${action.payload.length} transacciones de alto riesgo.`,
+        time: "Ahora",
+        type: "success",
+        read: false,
+        timestamp: Date.now()
+      };
+      localStorage.setItem("delta_notifications", JSON.stringify([newNotif, ...currentNotifs]));
+      window.dispatchEvent(new Event("delta_notifications_updated"));
+    }
+  }
+
   async function handleSend(e) {
     e?.preventDefault();
     const userMsg = query.trim();
@@ -258,6 +288,10 @@ function DeltaAIPage() {
         ...prev,
         { role: "assistant", content: data.response },
       ]);
+
+      if (data.action) {
+        executeAction(data.action);
+      }
 
       if (data.suggestions && data.suggestions.length > 0) {
         setSuggestions(data.suggestions);
@@ -289,6 +323,9 @@ function DeltaAIPage() {
     api.chatWithAI(suggestion, planId, transactions, { risk: contextRisk })
       .then((data) => {
         setMessages((prev) => [...prev, { role: "assistant", content: data.response }]);
+        if (data.action) {
+          executeAction(data.action);
+        }
         if (data.suggestions?.length > 0) setSuggestions(data.suggestions);
       })
       .catch(() => {

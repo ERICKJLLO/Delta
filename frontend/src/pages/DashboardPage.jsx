@@ -59,6 +59,21 @@ function DashboardPage() {
     navigate("/login");
   }
 
+  const handleNotificationClick = (notif) => {
+    if (activeSection !== "dashboard" && !isDeltaAI) {
+      setActiveSection("dashboard");
+    }
+    
+    const txMatch = notif.message.match(/TX-\d+/);
+    if (txMatch) {
+      setSearchQuery(txMatch[0]);
+    } else if (notif.title.toLowerCase().includes("nigeria") || notif.message.toLowerCase().includes("nigeria")) {
+      setSearchQuery("Nigeria");
+    } else {
+      setSearchQuery("riesgo");
+    }
+  };
+
   return (
     <div className="flex bg-[#0d0e14] h-screen overflow-hidden">
       <Sidebar
@@ -75,6 +90,7 @@ function DashboardPage() {
           company={companyName}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          onNotificationClick={handleNotificationClick}
         />
 
         <main className="flex-1 overflow-auto p-6">
