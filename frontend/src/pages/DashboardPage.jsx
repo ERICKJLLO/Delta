@@ -44,7 +44,7 @@ function DashboardPage() {
   }
 
   return (
-    <div className="flex bg-[#0d0e14] min-h-screen">
+    <div className="flex bg-[#0d0e14] h-screen overflow-hidden">
       <Sidebar
         activeSection={isDeltaAI ? "delta-ai" : activeSection}
         setActiveSection={handleSectionChange}
