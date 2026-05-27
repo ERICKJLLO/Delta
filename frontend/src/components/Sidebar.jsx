@@ -34,7 +34,7 @@ function Sidebar({ activeSection, setActiveSection, user, onLogout }) {
     : "UD";
 
   return (
-    <div className="w-64 bg-[#0a0a0f] border-r border-gray-800 h-screen flex flex-col justify-between">
+    <div className="w-full lg:w-64 bg-[#0a0a0f] border-b lg:border-b-0 lg:border-r border-gray-800 h-auto lg:h-screen flex flex-col justify-between lg:flex-shrink-0">
       <div>
         <div className="p-6 border-b border-gray-800">
           <h1 className="text-xl text-white font-bold tracking-tight">Proyecto Delta</h1>

@@ -110,13 +110,13 @@ function Header({ company, monitoring = true, searchQuery, onSearchChange, onNot
   };
 
   return (
-    <div className="h-16 bg-[#0a0a0f] border-b border-gray-800 px-6 flex items-center justify-between relative z-30">
+    <div className="bg-[#0a0a0f] border-b border-gray-800 px-4 sm:px-6 py-3 lg:py-0 lg:h-16 flex flex-col lg:flex-row gap-3 lg:gap-4 lg:items-center lg:justify-between relative z-30">
       {company && (
         <p className="text-sm text-gray-400 hidden lg:block mr-4 shrink-0">
           {company}
         </p>
       )}
-      <div className="flex items-center gap-4 flex-1 max-w-xl">
+      <div className="flex items-center gap-4 flex-1 w-full max-w-xl">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -138,8 +138,8 @@ function Header({ company, monitoring = true, searchQuery, onSearchChange, onNot
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="text-right mr-4">
+      <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
+        <div className="text-left lg:text-right mr-0 lg:mr-4">
           <p className="text-sm text-white">Sistema Activo</p>
           <p className="text-xs text-green-400 flex items-center justify-end gap-1">
             <span className={`w-2 h-2 rounded-full animate-pulse ${monitoring ? "bg-green-400" : "bg-gray-500"}`} />
@@ -168,7 +168,7 @@ function Header({ company, monitoring = true, searchQuery, onSearchChange, onNot
           {isPopoverOpen && (
             <div
               ref={popoverRef}
-              className="absolute right-0 top-full mt-2 w-96 max-h-[480px] bg-[#13141b]/95 backdrop-blur-xl border border-gray-700/60 rounded-xl shadow-2xl shadow-black/60 overflow-hidden z-50"
+                className="absolute right-0 top-full mt-2 w-[90vw] sm:w-96 max-h-[480px] bg-[#13141b]/95 backdrop-blur-xl border border-gray-700/60 rounded-xl shadow-2xl shadow-black/60 overflow-hidden z-50"
               style={{
                 animation: "popoverIn 0.2s ease-out"
               }}
