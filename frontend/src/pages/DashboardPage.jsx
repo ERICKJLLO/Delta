@@ -75,7 +75,7 @@ function DashboardPage() {
   };
 
   return (
-    <div className="flex bg-[#0d0e14] h-screen overflow-hidden">
+    <div className="flex flex-col lg:flex-row bg-[#0d0e14] min-h-screen lg:h-screen lg:overflow-hidden">
       <Sidebar
         activeSection={isDeltaAI ? "delta-ai" : activeSection}
         setActiveSection={handleSectionChange}
@@ -83,7 +83,7 @@ function DashboardPage() {
         onLogout={handleLogout}
       />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col lg:overflow-hidden">
         <Header
           monitoring={monitoring}
           lastScan={lastScan}
@@ -93,7 +93,7 @@ function DashboardPage() {
           onNotificationClick={handleNotificationClick}
         />
 
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-visible lg:overflow-auto p-4 sm:p-6">
           {isDeltaAI ? (
             <LockedFeature feature="delta_ai">
               <DeltaAIPage />

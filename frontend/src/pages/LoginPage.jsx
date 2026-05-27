@@ -27,7 +27,7 @@ function LoginPage() {
     "w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors";
 
   return (
-    <div className="min-h-screen bg-[#0d0e14] flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-[#0d0e14] flex flex-col items-center justify-start px-4 py-8 sm:px-6 sm:py-10 sm:justify-center">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
@@ -38,7 +38,7 @@ function LoginPage() {
           <p className="text-gray-400">Ingresa con tu correo y contraseña empresarial</p>
         </div>
 
-        <div className="p-8 rounded-xl bg-[#13141b] border border-gray-800">
+        <div className="p-6 sm:p-8 rounded-xl bg-[#13141b] border border-gray-800">
           {justRegistered && (
             <div className="flex items-start gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/30 mb-4">
               <CheckCircle className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
