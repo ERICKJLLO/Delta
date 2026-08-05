@@ -4,32 +4,11 @@ import api from "../services/api";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Intentar restaurar sesión al montar el componente
-  useEffect(() => {
-    async function restoreSession() {
-      try {
-        const token = api.getToken();
-        if (token) {
-          const response = await api.getMe();
-          if (response && response.user) {
-            setUser(response.user);
-          } else {
-            // Token inválido o expirado
-            api.logout();
-          }
-        }
-      } catch (error) {
-        console.error("Error al restaurar sesión:", error);
-        api.logout();
-      } finally {
-        setLoading(false);
-      }
-    }
-    restoreSession();
-  }, []);
+  // Usuario predeterminado — elimina la necesidad de login.
+  // Atención: esto deja la app sin autenticación. Usar solo si
+  // realmente quieres que el dashboard sea público.
+  const [user, setUser] = useState({ name: "Usuario Predeterminado", email: "default@delta.local" });
+  const [loading, setLoading] = useState(false);
 
   /**
    * Iniciar sesión llamando a la API
@@ -72,7 +51,8 @@ export function AuthProvider({ children }) {
    */
   function logout() {
     api.logout();
-    setUser(null);
+    // Mantener al usuario por defecto incluso si se llama logout en este modo
+    setUser({ name: "Usuario Predeterminado", email: "default@delta.local" });
   }
 
   return (

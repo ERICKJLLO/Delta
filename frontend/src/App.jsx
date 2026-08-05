@@ -9,15 +9,8 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 
 function HomeRedirect() {
-  const { isAuthenticated, loading } = useAuth();
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0d0e14] flex items-center justify-center text-gray-400">
-        Cargando...
-      </div>
-    );
-  }
-  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+  // Redirigir siempre al dashboard (sin login)
+  return <Navigate to="/dashboard" replace />;
 }
 
 function App() {
